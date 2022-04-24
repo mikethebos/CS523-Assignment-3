@@ -41,190 +41,45 @@ mikethebos@unm.edu}
 
 \begin{abstract}
 
-% An Abstract that summarizes the purpose and main findings of your paper. Be sure to specifically describe your most interesting finding, i.e., if someone didn’t read your paper, they should still understand the essence of what you found (not just the steps you took to find it).
 
-Our project aims to explore the abilities of distributed genetic algorithm's ability to simulate the germinal center's ability of clonal expansion, somatic hypermutation, and cell selection in order to identify possible criteria for convergence based on an evolutionary algorithmic approach. By utilizing an evolutionary algorithmic library and emulating the general abilities of a germinal center with a narrow focus, we were able to identify potential parameters that contribute to converging antigens. Due to the inherit complexities introduced within the immune system and germinal center dynamics, this approach is limited to only a theoretical approach where a narrow scope is taken.    
 \end{abstract}
 
 
 \section{Introduction}
 
-To introduce the topic, we explain the processes of the germinal center that we simulate with genetic algorithms. The key element is the process within the germinal center which accepts a Naive B cell which undergoes clonal expansion and somatic hypermutation. This mutates the antigens within the germinal center to improve affinity between the virus and corresponding epitope on the antigen. However, the vast amount of mutations may not be beneficial and may be considered disadvantaged mutations which are eliminated with Apoptotic B Cells. The improved cells are selected and have the chance of either creating memory B cells or plasma cells. This process repeats to improve the affinity and thus causes antigens to be improved upon even months after the initial infection. For reference, the mRNA-1273 COVID-19 vaccination stimulates antibody production up to 3 months after the second dose. \cite{vaxlast} We emulate these interaction between epitopes, which are the identifying components that antigens typically bind to, and a corresponding antibody which should partially bind some epitopes with a paratope.
-
-Germinal centers are temporary objects within lymph nodes and are crucial to developing immunity to viruses. This is pertinent in the current state of the 2019 SARS-CoV-2 pandemic (COVID-19).  COVID-19 began to circulate in Wuhan, China in late 2019. By March 2020, it spread throughout the human populations on Earth and, as of March 2022, has killed over 6 million people worldwide. \cite{b6}    Due to the high number of infections and deaths, vaccinations were quickly developed to stimulate the immune system to generate antibodies for SARS-CoV-2 in order to make the disease less severe. Germinal centers are key to this process as tuned B cells can prevent infection and severe disease. Our experiments aim to model the behavior of germinal centers in order to make predictions about immunity to SARS-CoV-2, including the need for tweaking vaccinations, based on the original strain, as new variants emerge. 
-
-Our goal is to simulate the cells being expanded, mutated, and selected using the Distributed Evolutionary Algorithms in Python package (DEAP) \cite{deap} to make small mutations to potentially produce cells with a higher affinity. Proper modeling may give insight on the time and energy-intensive process that takes place while developing better cells. Considering the great amount of variability in assumptions while attempting to emulate this behavior we narrow the scope with certain assumptions regarding the evolutionary process that the germinal centers have a role in. For instance, there are many metrics that can be used to measure fitness, different probabilities that a bit can mutate at, different probabilities that a cell can be communicated between germinal centers, and even how many cells move on from a germinal center. By narrowing this scope, we aim to identify the varying emerging behaviors that may provide insight into germinal centers' evolutionary dynamics.    
-
-We initialize our germinal centers with a population of epitopes from the virus and the corresponding antibodies each being of 48 bits that are randomly generated. Using varying parameters we are able to mutate, then select the best-performing mutants to reproduce. This approach is extremely limiting as the complexities that are exhibited within this complex adaptive system will not be properly modeled by a simplified 48 bit model with simplified instructions. Further
 
 \section{Methods \& Results}
 
-% A Methods & Results (combined) section that contains
-% Figures with captions that are self-explanatory (someone could look at the figure and the caption and understand it without reading the full paper)
-% Explanation of your Methods explaining how you generated each figure and any associated calculations with pointers to code and enough detail that someone could replicate your results.
-% A text description of results that summarizes each figure and explains and interprets that figure. Generally, you will need at least one paragraph per figure.
-
 \subsection{Emulating Germinal Center Capabilities with DEAP}
 
-The Distributed Evolutionary Algorithms in Python (DEAP) library provided data structures to facilitate the evolution of the germinal centers. DEAP is best described as a novel evolutionary computation framework that allows data structures to be easily encapsulated and used with evolutionary algorithmic designs. The framework is primarily developed by Computer Vision and Systems Laboratory at Université Laval, in Quebec, Canada.
 
-An object oriented class called GerminalCenter was designed on top of DEAP in order to harness the tools provided by DEAP.  The three main pillars of all evolutionary algorithms were implemented. First, a selection procedure is performed, based on the fitness of the paratopes in the previous population, which creates a new population with possibly improved fitness. Next, a mutation procedure is defined. At random or at distinct steps in the evolutionary process, paratopes are picked to mutate and flip a few of the 48 bits within the paratope. The final pillar performs a crossover between two chosen paratopes.  This involves exchanging bits at random; or picking one or more sections of bits and exchanging the bits in each section in a random direction. 
-
-Most importantly, a fitness function is defined in each germinal center and given to DEAP. Fitness is used to evaluate how well each individual in a population performs at the given task. In the case of germinal centers, we chose to evaluate the Hamming distance between the paratopes and epitopes. Hamming distance is defined as the number of different bits across two or more binary strings. Since antibodies can partially bind to epitopes, an aggregation function was used to combine the fitness of one paratope over multiple epitopes, yielding a single real number per paratope to minimize.
-
-\begin{algorithm}
-\caption{Hamming Distance}\label{alg:cap}
-
-\State $d(u,v) \geq 0$  and $d(u,v)=0$  if and only if $u=v$
-\State $d(u,v)=d(v,u)$
-\State $d(u,v) \leq (u,w)+d(w,v)$
-\end{algorithm}
-
-
-
-Our GerminalCenter class allows one to switch the algorithms used for each procedure in each germinal center. The constructor is passed every controllable parameter, such as the probability to mutate, as well as a function to carry out each evolutionary procedure. The selection function is given the entire history of generations, so that a more sophisticated selection procedure can be evaluated if needed. Each time step is executed from outside the class by the iterate function, allowing control of how many generations are evolved. The default iterate function performs the evolutionary process in the following order:  selection, mutate, and cross.
-
-A few of the germinal centers perform the steps above in different orders.  The flexibility of the class allows us to add additional iterate functions to customize the behavior of each germinal center.
-
-\begin{figure}[htbp]
-\centerline{\includegraphics[scale = .5]{resources/means_maxs_mins.png}}
-\caption{Mean Hamming Distance plotted against the generations iterated over the genetic algorithm with one viral epitope, with the minimum and maximum fitness drawn}
-\label{oneepitope}
-\end{figure}
-
-\begin{figure}[htbp]
-\centerline{\includegraphics[scale = .5]{resources/means_maxs_mins_ga_no_cross_0.009000000000000001.png}}
-\caption{Mean Hamming Distance plotted against the generations iterated over the genetic algorithm with 64 viral epitopes, with the minimum and maximum fitness drawn. Crossover probability set to 0 (GA no cross).}
-\label{multiepitope}
-\end{figure}
 
 \subsection{Generic GA}
 
-At first, a general genetic algorithm was implemented that evolved many paratopes to bind to a single 128 bit epitope. Several bit flip mutation rates were tested to see how the population of paratopes evolved.
-
-\begin{algorithm}
-    \caption{General Genetic Algorithm}\label{alg:cap}
-        \State Initialize paratopes and epitopes modeling
-        \For{each generation}
-            \State Iterate and evolve antigens
-            \State Calculate cellular affinity using hamming distance
-            \For{antigen $\in$ antigens}
-                \State \textit{Select cells with best affinity}
-                \State \textit{Remove all other disadvantaged mutations}
-            \EndFor
-        \EndFor
-\end{algorithm}
-
-Figure \ref{oneepitope} shows the average fitness of the randomly initialized paratopes in each generation against the single epitope. The average fitness drops rapidly from 70 to 60. After this initial epoch of evolution, the paratopes evolved linearly to within 5-10 bit flips from the target. In immunological terms, this model predicts that most of the antibodies within a germinal center may adapt to the viral epitope if given enough time, but some will have mutations (possibly due to biological error in transcription). This variety will allow the immune system to fight off identical viral epitopes, as well as a small set of slight variations. 
-
-A similar GA was then developed to match the antibody population against 64 randomly generated 48 bit epitopes without crossover. 48 bits was chosen to match the number of possible codons in an epitope refined by further information presented in class. Figure \ref{multiepitope} shows a similar first epoch as in Figure \ref{oneepitope}, but settles to a higher value of 18. This is because the GA optimizes against average hamming distance, so each paratope tries to partially match the entire epitope. 
-
-Immunologically, this means that the generated population of antibodies has less substantial partial binding compared to the one epitope case. Even though binding is weak in this type, this may cause the immune system to recognize an increased number of viral particles, providing defensive benefit if the viral vector has a large number of distinct epitopes.
-
-
-
 \subsection{Every Man is an Island}
-
-We have used the Every Man is an Island \cite{b5} paper's implementation of a ring topology of germinal centers to reproduce one of the most effective strategies presented in the paper. Our goal was to further explore the successful parameters presented in the paper and to compare them to the general approach implemented in Algorithm 3.
-
-We implemented the lonely mutant and the every man is an island strategies. The lonely mutant strategy uses a single population of epitope with no crossover and an individual bit flip probability of 0.01. the strategy selects the best of the mutant and the parent after the general genetic algorithm is applied to the paratope. The mutation probability explored is from 0.001 to 0.01 and the fitness function is again the Hamming distance. The range of the mean fitness of this method was consistent between 23 to 26 for each value of the range tested. 
-
-The mutation algorithm was used for each Germinal Center in a topological ring of Germinal Centers with size 64. The mutation probability explored was of range 0.001 to 0.01 with step size 0.005 and the crossover probability was of range 0.1 to 0.8 with step size of 0.5. We chose to these range bases on Every Man is an Island to replicate the and further explore their most effective mutation and crossover probabilities from their exploration. 
-
-\begin{algorithm}
-\caption{Every Man is an Island}\label{alg:cap}
-
-\For{64 islands}
-\State child = clone(parent)
-\State mutant = mutate(child) 
-\State child = selectBest([parent,mutant]) 
-\State mutant = crossOver(child,neighbor) 
-\State child = selectBest(child,mutant) 
-\EndFor
-
-\end{algorithm}
-
-The graphs were generated with Matplotlib's Pyplot library. The mean hamming distance metric was found to be the most indicative of the overall performance of the model and plot it against varying parameters such as crossover probability, mutation probability, epitope sizes, and etc. 
-
-\begin{figure}[htbp]
-\centering{\includegraphics[scale = .8]{resources/islands_10gen/islandstrat3d.png}}
-\caption{Three dimensional box plot of the mean hamming distance between the adjusted probabilities on an .}
-\label{island}
-\end{figure}
-
-To gauge the effectiveness of varying probabilities that crossover and mutation probabilities can incur on the performance of the germinal center model. We see that the germinal center's average performance amongst all the differing probabilities is not affected. We believe that this is primarily due to the elimination that is performed after mutation as typically cells within a germinal center work well only against the epitope they have been improved upon after n generations. Whenever these fine-tuned cells are shared between germinal centers where the epitope was generated randomly, they tend to do worse as the mutations will not be beneficial. After the first few iterations, we anticipate that there is little benefit in the sharing between germinal centers due to the uniqueness between epitopes, and that most shared cells get rooted out immediately after sharing in the affinity testing stage. While sharing may not be emulated perfectly, there is still a chance that the sharing may be more beneficial for similar-bit epitopes and also beneficial for epitopes in earlier generations as sharing may increase the affinity, but is still unlikely.
-
-We see that due to the mutation and selection criteria within the germinal centers, each model slowly converges consistently due to a good paratope compliment. The deviation between paratope fitness is small and suggests that similar scoring paratopes are selected to move on. There is typically no major deviations between the cells that are selected and this is due to our selection and mutation criteria. Since there is a consistent mutation bit-flip probability, there is typically only going to be a few mutations on each cell per generation, and they can be classified as good flips or bad flips according to the hamming distance metric. The selected mutations are going to be the few mutations that have all had "good flips" in the bits. This causes all paratopes to roughly converge equally. 
-
-
 
 \section{Discussion \& Conclusion}
 
 \subsubsection{Limitations of DEAP Models}
 
-Assumptions were made during the creation of our germinal center representation with DEAP. First, we followed the classic paradigm of genetic algorithms: mutate, crossover, and select. For selection to occur, we had to choose a fitness function to describe how each paratope matched the entire population of epitopes within the germinal center. We chose to use the average Hamming distance as our fitness function. While the average Hamming distance may be easy to implement in DEAP, it is suspected that biological germinal centers have a mechanism for maturing some paratopes to their own small sample of epitopes, thereby increasing the fitness dramatically with respect to the smaller epitope population rather than the diverse population. Another drawback to using the Hamming distance as the fitness function is that it causes the entire gene of the paratope to be mutated. This ignores the effect of the hypervariable region in which, during somatic hypermutation, only select parts of the gene that contain repeating codons are mutated. We predict that a few matches to an epitope in the hypervariable region may lead to better binding in comparison to a larger match in the general region. \cite{b1}  There are specific regions within the epitope that provide higher binding affinity than others.
-
-Furthermore, representation of the epitopes and paratopes as bit strings may hide specific targeting towards the phenotypic characteristics of the epitope. For example, some viruses target the lungs and the expression of viral genes may be dependent on location of attack. Biological germinal centers are brought epitopes from many different parts of the body, such as the lungs and stomach, by follicular dendritic cells. This allows the germinal center to develop specialized B cells to kill specific types of cells containing viral material. \cite{b3} There is much more complicated behavior in the mutation process than matching a 48 bit epitope string in order to create a mature antibody. On a similar note, other non-genetic expressions, such as the body having an inherent weakness to the virus, affect how antibodies mature within germinal centers, even without an immunocompromising condition. Our DEAP model does not take these factors into account.
-
-Additionally, while the crossover function provided benefit especially in the island model, germinal centers do not exhibit this behavior. In biology, through a literature search, it is believed that antibodies undergo cellular division within the germinal center. \cite{b2}  This division occurs during the somatic hypermutation process. Further investigation into whether algorithmic crossover is a decent estimation of cellular division is warranted. 
-
-Other features missing from our models include simulating multiple stages of mutation \cite{b1}, as well as other nuances in the biological workings of germinal centers. It is unclear what signals antibodies to stop maturing within a germinal center to get marked as mature. This is an active area of research within the field of immunology \cite{b4}, and could lead to an antibody ejection algorithm proving useful in our models. The regulation of germinal centers to prevent autoimmune diseases is also not taken into account; however, future models could examine this by modifying the fitness and/or selection procedures outlined in this paper. Based on our literature search, communication between germinal centers is assumed to be limited; this is an area of active research in immunology. Thus, most of our models concentrate on the behavior of a single germinal center, except for the island model.
-
-
 \subsubsection{Neutral Network Traversal}
-Mutation over neutral networks requires some description of phenotypic expression of an epitope/paratope or antigen. Our approach with a 48-bit string representation in our model allows us to easily determine whether a bit position matches as a binding base to a specific epitope, but we trade off more general meaning of our epitopes. We don’t encode for specific amino acids and phenotypes when we generate bit strings to represent our epitopes. There is an avenue for encoding these by assigning different bit string combinations to represent certain acids, but for lack of deep understanding of immunology we chose to approach the problem in a simplified manner and reduced the complexity of the problem by generalizing the bit strings. Our bit strings also lacks adequate information to describe the nuances of binding between an epitope and paratope. We used Hamming distance to describe binding by the distance between two bit-strings, which expresses a perfect match as identical bit strings. In a real-world setting, we may have certain amino acids or bases that bind more strongly than other amino acids, but we have no weight assigned to different degrees of binding. 
-
-
-In our model the expression of neutral networks is lost by using a method that gives significance to flipping bits that may be neutral in a real germinal center. A mutation of a bit string by one bit may be weighted as a closer Hamming Distance than its parent by matching one specific bit more than its parent. In a more expressive model, we may be flipping an insignificant bit that only moves the epitope along a neutral edge in the epitopes specific neutral network. Such that the bit flipped actually causes no phenotypic change in the epitope, but we have assigned meaning to this mutation. In the neutral network we may have many of these neutral bit flips and an epitope with a vastly genetic makeup from our parent epitope, but their expression is the same. All of this is lost in the fitness function that we chose that relies on direct match of epitope bits (although averaged between a population). 
-
-This model expresses the need for the boosting of vaccines to match new mutations of viruses. Our model shows that directly matching epitopes may create antigens that are great at binding specifically to a population that it is presented with. But with many different genetic makeups as of a phenotype, we may only be binding to a specific combination of bases. When a virus is mutated, it may express the same or a similar phenotype with vastly different combinations due to neutral mutations, which perhaps means our previously developed antigens no longer effectively bind to this mutation. 
-
-To address the exploration versus exploitation trade-off it appears our model expresses more exploitation. We are using our fitness function to manipulate the expression of our paratope population towards a desired epitope fitness. We do have elements of exploration that occur in our genetic algorithms such as cross mutations that allow our paratopes to explore novel areas of a paratopes region for fitness. But our mutations are generally point mutations that make fine-grained changes to our paratopes and negative mutations are usually quickly pruned. Larger population of paratopes allow for more exploration of novel paratopes and cross-mutations, but again we do not explore new areas for the sake of novelty, we constrain those new explorations by the fitness of the overall paratope.
 
 \subsubsection{Conclusions}
-
-We began our experimentation by implementing a basic germinal center model based on a classic genetic algorithm with only random mutation.   Through the evolution of this algorithm, it is observed in Figure \ref{multiepitope} that the evolved paratopes matched 28-30 bits of the size 10 population of epitopes residing in each germinal center. This is improved by 8-10 bits when compared to the initial population. In the context of viral defense, an improvement of 16-20\% in binding may be significant in the defense of an infection since it may provide better binding against multiple epitopes. When one epitope was present in the population, most paratopes evolved to match the exact epitope as seen in Figure \ref{oneepitope}. Next, we chose to experiment with the lonely mutant model in which only one paratope is evolved in each germinal center. In most of the runs of this algorithm, the fitness of the single paratope did not improve significantly over time. While this is not a positive result, it is also not realistic since germinal centers usually contain multiple paratopes to evolve. Thus, the lonely mutant model did not prove to be effective. When examining our final model in Figure \ref{island}, we saw that the every man as an island model exhibited some collective behavior across many different genetic parameters. Although, our results did not follow the trend presented by Every Man is an Island\cite{b5}. The trend suggest that minimal island population size was their most effective strategy and that 64 to 128 islands was an ideal range for their benchmarks. With our fitness function we have shown that our more general GA algorithm proved more effective than the island strategy. The mean fitness of all island populations settled to around 24 after 1000 generations, suggesting that all populations with different mutation and crossover probabilities achieved a similar binding percentage. Which is very similar to the results of the lonely mutant which uses a single population with no crossover. While this is not as high as the generic mutation model, it may prove to be important as immunological knowledge improves. It is currently still unknown whether there is communication between germinal centers; however, if there is, future work could explore the every man as an island model with different fitness functions and other parameters. 
-
-Our models experimented with in this paper do not tend to travel between neutral mutations in the first few generations. The selection algorithm picks the best set of individuals from the current population and makes them the base of the new population. This leads to only improved individuals being selected. However, once the average hamming distance settles to a relatively constant value, more neutral mutations are picked up. This dichotomy of behavior at the beginning of evolution compared to the last few generations is due to the use of a selection based solely on the fitness. Future work could expand by implementing a more complex selection algorithm in order to take both fitness and neutrality into account. 
-
-% \section*{Acknowledgments}
 
 
 \begin{thebibliography}{00}
 
-\bibitem{b1} Z. Li, C. J. Woo, M. D. Iglesias-Ussel, D. Ronai, and M. D. Scharff, “The generation of antibody diversity through somatic hypermutation and class switch recombination,” Genes &amp; Development, vol. 18, no. 1, pp. 1–11, 2004. 
-\bibitem{b2} C. A. Janeway, K. Murphy, P. Travers, M. J. Walport, and M. Ehrenstein, Janeway's Immunobiology. New York City, NY: Garland Science, 2008. 
-\bibitem{b3} B. A. Heesters, P. Chatterjee, Y.-A. Kim, S. F. Gonzalez, M. P. Kuligowski, T. Kirchhausen, and M. C. Carroll, “Endocytosis and recycling of immune complexes by follicular dendritic cells enhances B cell antigen binding and activation,” Immunity, vol. 38, no. 6, pp. 1164–1175, 2013. 
-\bibitem{b4} T. Inoue, R. Shinnakasu, C. Kawai, W. Ise, E. Kawakami, N. Sax, T. Oki, T. Kitamura, K. Yamashita, H. Fukuyama, and T. Kurosaki, “Exit from germinal center to become quiescent memory B cells depends on metabolic reprograming and provision of a survival signal,” Journal of Experimental Medicine, vol. 218, no. 1, 2020. 
-
-\bibitem{b5} N. Holtschulte, and M. Moses. "Should every man be an island." GECCO, 2013.
-
-\bibitem{b6} “Covid-19 map,” Johns Hopkins Coronavirus Resource Center. [Online]. Available: https://coronavirus.jhu.edu/map.html. [Accessed: 22-Mar-2022]. 
-
-\bibitem{deap} François-Michel De Rainville, Félix-Antoine Fortin, Marc-André Gardner, Marc Parizeau and Christian Gagné, “DEAP: A Python Framework for Evolutionary Algorithms”, in EvoSoft Workshop, Companion proc. of the Genetic and Evolutionary Computation Conference (GECCO 2012), July 07-11 2012.
-
-\bibitem{vaxlast} N. Doria-Rose, et al., “Antibody persistence through 6 months after the second dose of mRNA-1273 vaccine for covid-19,” New England Journal of Medicine, vol. 386, no. 5, pp. 500–500, 2022. 
+\bibitem{b1} 
 
 \end{thebibliography}
 
 \section*{Contribution Statements}
 
-\subsection{Connor} Helped with group coding session and anaconda installation. Implemented main code for gathering and graphing the results using regular and 3d box plots. I generated the graphs and wrote the following for the document: Most of the introduction (minus the COVID paragraph), most of the abstract, a paragraph in methods and results regarding DEAP, and contributed explanations regarding the graphs and the interpretable results. In addition, I helped debug some code files within the python and latex documents. I attempted to code up some additional abstractions for lymph node objects but the GA mutation strategies explored by Craig were found to be adequate. 
+\subsection{Connor} 
 
-\subsection{Craig} Lead pair coding of initial implementation of DEAP toolbox example. Implemented GA mutation strategies explored in Every Man is an Island paper. Lead contributions to sections related to Every man is an island and Neutral Network Traversal. I also contributed, proof read and edited the methods and conclusions sections. 
+\subsection{Craig} 
 
-\subsection{Michael} I watched Craig program a DEAP example from their website. Later, I independently expanded this code into a Python class for flexibility. Methods for center communication were added into the class. A basic GA was created to help ensure my abstraction worked. I subsequently helped Craig debug custom derivatives of this class for the different models, including his custom iterate functions. I then abstracted Connor's initial graphing code in order to make it easy to plot data of various models.
-
-I wrote the COVID-19 paragraph in the Introduction. Next, I wrote the description of the DEAP class model and general model in Methods \& Results. Most of the Discussion \& Conclusion section was written by me; Craig contributed to the neutrality section along with the others.
-
-% \section*{Data}
-
-% mutualInfo = [1.8566, 2.1559, 0.0, 2.0729]
-
-% R = np.array([2.8, 2.8, 3.8, 3.8])
-
-% X[:, 0] = np.array([1.0, 1.05, 1.0, 1.05])
-
+\subsection{Michael} 
 
 
 \end{document}
