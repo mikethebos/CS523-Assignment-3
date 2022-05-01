@@ -1,0 +1,1 @@
+git@github.com:DeepLenin/fashion-mnist_png.git
