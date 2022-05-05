@@ -55,15 +55,11 @@ This exploration with varying MNIST (Modified National Institute of Standards an
 
 \section{Introduction}
 
-In traditional Cellular Automata (CA), there consists of a n-dimensional grid of cells where each cell consists of an on or off state. At each iteration, the grid is processed according to the ruleset and a new grid is generated. The most famous example of a 2D cellular automata is considered to be Conway's Game of Life, where a player creates an input and the evolutionary ruleset determines the output of the game. 
+In traditional Cellular Automata (CA), there consists of a n-dimensional grid of cells where each cell consists of an on or off state. At each iteration, the grid is processed according to the ruleset and a new grid is generated. This iterative process of calculating the next iteration leads to interesting results. The most famous example of a 2D cellular automata is considered to be Conway's Game of Life, where a player creates an input and the evolutionary ruleset determines the output of the game. In neural cellular automata, the 3x3 convolution layer takes the place of a window for each grid cell. As seen in Fig 2, continuous-valued convolutions provide each cell the information about its neighborhood needed to update itself. A NCA's Convolutions provide two new abilities; They allow a cell's state to be in the range of continuous real numbers rather than discrete values, and any differentiable function can be used and will thus yield more sophisticated behavior than a regular CA. Theoretically, this has the ability to solve more complex problems. 
 
+In terms of the cost of computation, neural networks and cellular automata can both take advantage of parallelism. However, neural networks are said to be expensive since high end graphics processing units (GPUs) are generally needed to perform training in a reasonable amount of time. This is due to the complexity involved in performing back-propagation using gradient descent during supervised learning.
 
-In neural cellular automata, the convolution layer takes the place of a window for each grid cell. As seen in Fig 2, continuous-valued convolutions provide each cell the information about its neighborhood needed to update itself. A NCA's Convolutions provide two new abilities; They allow a cell's state to be in the range of continuous real numbers rather than discrete values, and any differentiable function can be used and will thus yield more sophisticated behavior than a regular CA. This has the ability to solve more complex problems. 
-For example, the authors of the self-organizing NCA paper were able to self-classify MNIST digits with a NCA which would have not been possible with a regular CA.
-
-
-% Probably shouldnt add the below information as I dont believe delving into training time is necessary especially since it requires a nuanced comparison
-% In terms of the cost of computation, neural networks and cellular automata can both take advantage of parallelism. However, neural networks are said to be expensive since high end graphics processing units (GPUs) are generally needed to perform training in a reasonable amount of time. This is due to the complexity involved in performing back-propagation using differential calculus during supervised learning.
+In our project we adapt and extend the code developed by the self-organizing NCA series \cite{selforg}, to accomplish these classification and generative approaches to data. We also look adversarial approaches and the overall cost of computation.
 
 
 % Things to address
@@ -72,20 +68,23 @@ For example, the authors of the self-organizing NCA paper were able to self-clas
 %   - Fundamentals of this stuff is based on deep learning where gradients are propagated and etc. Probably a simple graph of the CNNs used.
 %   - Probably a few formulas as well for consistency.
 
+\section{Methods & Results}
 
+\subsection{Overview of Fashion MNIST}
 
-\section{Overview of Fashion MNIST}
+The Fashion MNIST dataset is considered a clothing and accessory dataset consisting of ten classes: T-shirt/top, Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, Bag, Ankle boot. The dataset consists of 60,000 training images, and 10,000 validation images, all of which are 28x28 pixels grayscale images. 
 
 \begin{figure}[htbp]
 \centering{\includegraphics[scale = .4]{resources/fashion_mnist.png}}
-\caption{ Visualization of a subset of images from the Fashion MNIST dataset that is trained upon } 
+\caption{ Visualization of a subset of images from the Fashion MNIST dataset that is trained upon, in order from top to bottom: T-shirt/top, Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, Bag, Ankle boot } 
 \end{figure}
 
-The Fashion MNIST dataset consists of a 
+The current state of the art results for the models is \%96.91 achieved by the DARTS model \cite{Darts}. 
 
-% Things to address:
-%   - Data Preprocessing
-% 
+\section{Data Preprocessing}
+
+There is fundamentally an innate segmentation task of partitioning "alive" cells (where the NCAs would be calculated) and the dead cells. In images, the alive cells would be defined by the pixels of the object subject to classification excluding the background. We do much of this data preprocessing by filtering out the background this is typically the darkest cells in the image, and manually calculate the alive cell mask.
+
 
 \section{Fashion MNIST Results}
 
@@ -105,7 +104,7 @@ The Fashion MNIST dataset consists of a
 \caption{Three dimensional box plot of the mean hamming distance between the adjusted probabilities on an }
 \end{figure}
 
-\subsection{Emulating Germinal Center Capabilities with DEAP}
+\section{Emulating Germinal Center Capabilities with DEAP}
 
 
 
@@ -119,6 +118,8 @@ The Fashion MNIST dataset consists of a
 \bibitem{self-classify} Randazzo, et al., "Self-classifying MNIST Digits", Distill, 2020.
 
 \bibitem{adversarial} Randazzo, et al., "Adversarial Reprogramming of Neural Cellular Automata", Distill, 2021.
+
+\bibitem{Darts} M. S. Tanveer, M. U. K. Khan, και C.-M. Kyung, ‘Fine-Tuning DARTS for Image Classification’, CoRR, τ. abs/2006.09042, 2020.
 
 \end{thebibliography}
 
