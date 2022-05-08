@@ -3,12 +3,15 @@
 % The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
-\usepackage{algorithmic}
+% \usepackage{algorithmic}
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{algorithm}
+\usepackage{subcaption}
 \usepackage{algpseudocode}
+\usepackage{CJKutf8}
+\usepackage{mwe} % For dummy images
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -79,10 +82,18 @@ The Fashion MNIST dataset is considered a clothing and accessory dataset consist
 \caption{ Visualization of a subset of images from the Fashion MNIST dataset that is trained upon, in order from top to bottom: T-shirt/top, Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, Bag, Ankle boot } 
 \end{figure}
 
-The current state of the art results for the models is \%96.91 achieved by the DARTS model \cite{Darts}, and where even the most simple of dense neural networks can achieve up to \%91 \cite{tf_fmnist}. Typically, model confusion arises in the classification of items such as t-shirts, pullovers, coats, and shirts where even human-level
+The current state of the art results for the models is \%96.91 achieved by the DARTS model \cite{Darts}, and where even the most simple of dense neural networks can achieve up to \%91 \cite{tf_fmnist}. Typically, model confusion arises in the classification of items such as t-shirts, pullovers, coats, and shirts where even human-level analysis can fail.
 
-\subsection{Kuzushiji Dataset}
+\subsection{Overview of Kuzushiji MNIST}
 
+The Kuzushiji MNIST (KMNIST) dataset is composed of Japanese language characters consisting of the ten main classes of Hiragana: \begin{CJK}{UTF8}{min} お, き, す, つ, な, は, ま, や, れ, を \end{CJK}. \cite{kmnist} KMNIST is constructed similarly to Fashion MNIST with 28x28 grayscale images composing a training set of 60,000 examples, and a test set of 10,000 examples. It can be used as a drop-in replacement for MNIST and its color space allows for easy adaptation into NCA models.
+
+\begin{figure}[htbp]
+\centering{\includegraphics[scale = .4]{kmnist/adv_demo/composite.png}}
+\caption{ Visualization of a subset of images from the KMNIST dataset that is trained upon. Each row represents a class of Hiragana; modern calligraphy is used on the left and ages as read from left to right.} 
+\end{figure}
+
+State of the art models \cite{kmnistsota} achieve 99.76\% with shake-shake regularization in order to minimize overfitting. In contrast to MNIST, Hiragana characters are mostly non-contiguous, meaning that they tend to feature islands of strokes separated by white space. This will prove significant to our NCA implementation since each input image is segmented into alive and dead cells.
 
 \section{Methods}
 
@@ -143,68 +154,127 @@ The adversarial begins with a pre-trained classification model and selects neura
 
 \subsection{Fashion MNIST Classification Results}
 
-After training the classification model on the Fashion MNIST dataset, that has been preprocessed and normalized, for 100,000 epochs. The maximum final accuracy determined from the test dataset is calculated to be \%80.81.
+After training the classification model on the Fashion MNIST dataset, that has been preprocessed and normalized, for 100,000 epochs. The general accuracy of the model is calculated to be the following:
+
+\begin{equation}
+    \frac{Total\_Correct\_CAs} {Total\_CAs}
+\end{equation}
+
+The maximum final accuracy determined from the test dataset is calculated to be \%80.81.
 
 \begin{figure}[htbp]
 \centering{\includegraphics[scale = .4]{resources/test_accuracy.png}}
 \caption{Three dimensional box plot of the mean hamming distance between the adjusted probabilities on an }
 \end{figure}
 
-The general accuracy of the model is calculated to be the following:
 
-\begin{equation}
-    \frac{Total\_Correct\_CAs} {Total\_CAs}
-\end{equation}
 
-Unfortunately, this metric is not the most informative metric as it doesnt account for agreement between cells.
+Unfortunately, this metric is not the most informative metric as it doesnt account for agreement between cells. The agreement becomes a problem when 
 
 \begin{figure}[htbp]
 \centering{\includegraphics[scale = .4]{resources/test_agreement.png}}
-\caption{Three dimensional box plot of the mean hamming distance between the adjusted probabilities on an }
+\caption{ Total agreement amongst pixels with respect to the classification that is being outputted}
 \end{figure}
 
-This metrics helps account for convergence of classifications.
-
+By introducing this secondary metric, this attempts to help account for convergence of classifications amongst local regions with respect to each image. This metric becomes especially important with data that is not spatially connected. Due to the noise introduced in the pre-processing for the fashion MNIST dataset, there are occasionally "islands" of pixels that arrive to different classifications sometimes irrelevant to object of interest's classification.
 
 \begin{figure}
-    \begin{subfigure}
-      \centering
-      \includegraphics[width=.47\linewidth]{resources/ep100_class.png}
-    %   \caption{1a}
-    %   \label{fig:sfig1}
-    \end{subfigure}%
-    \begin{subfigure}
-      \centering
-      \includegraphics[width=.47\linewidth]{resources/ep100000_class.png}
-    %   \caption{1b}
-    %   \label{fig:sfig2}
-    \end{subfigure}
+    \centering
+    \begin{minipage}{0.24\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{resources/ep100_class.png} % first figure itself
+        % \caption{first figure}
+    \end{minipage}\hfill
+    \begin{minipage}{0.24\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{resources/ep100000_class.png} % second figure itself
+        % \caption{second figure}
+    \end{minipage}
     \caption{Left: Visualization of training progress at epoch 100. Right: Visualization of training progress at epoch 100,000}
     \label{fig:fig}
 \end{figure}
 
+
 Given the visualizations provided in fig. 5, the models become more proficient at classification as training progresses. 
 
 \subsection{Fashion MNIST Generative Results}
+
+Using the generative model, we can train the neural cellular automata to regenerate an image that it was trained upon. This relies on an iterative approach to defining the alive and dead cells with each iteration. Upon each iteration, the cellular automata have been trained to generate the next iteration. However, the model is still limited by the designated alive cells. 
+
+Because the alive cells in the generative results are dynamic. The selection of "new" cells to switch on must be performed after each iteration. The best way of going about this is to switch on cells surrounding other alive cells given a threshold. This is done at the end of each iteration to allow the model to grow relative to the activity of the model. There seems to be a trade-off by increasing the number of newly switched on cells increase the instability of the results. The slow and steady approach of the model leads the results to strictly converge to the image that it was trained upon.  
+
+\begin{table}[ht]
+\begin{tabular}{cc}
+\begin{subfigure}{0.23\textwidth}\centering\includegraphics[width=1\columnwidth]{resources/gen_fmnist/ex100_adv.png}\caption{After 100 epochs}\label{fig:taba}\end{subfigure}&
+\begin{subfigure}{0.23\textwidth}\centering\includegraphics[width=1\columnwidth]{resources/gen_fmnist/ex500_adv.png}\caption{After 500 epochs}\label{fig:tabb}\end{subfigure}\\
+\newline
+\begin{subfigure}{0.23\textwidth}\centering\includegraphics[width=1\columnwidth]{resources/gen_fmnist/ex1000_adv.png}\caption{After 1000 epochs}\label{fig:tabc}\end{subfigure}&
+\begin{subfigure}{0.23\textwidth}\centering\includegraphics[width=1\columnwidth]{resources/gen_fmnist/ex2000_adv.png}\caption{After 2000 epochs}\label{fig:taba2}\end{subfigure}\\
+\newline
+\begin{subfigure}{0.23\textwidth}\centering\includegraphics[width=1\columnwidth]{resources/gen_fmnist/ex5000_adv.png}\caption{After 5000 epochs}\label{fig:tabc}\end{subfigure}&
+\begin{subfigure}{0.23\textwidth}\centering\includegraphics[width=1\columnwidth]{resources/gen_fmnist/ex8000_adv.png}\caption{After 8000 epochs}\label{fig:taba2}\end{subfigure}\\
+\end{tabular}
+\caption{Training progress over time in the generation of the images}
+% \label{tab:mytable}
+\end{table}
+
+From the information and the generated progress visualizations, the model seems to be able to recreate the original image in many different manners, but in the end after 8000 epochs, the neural cellular automata seem to be successful in the recreation. 
+
 
 \begin{figure}[htbp]
 \centering{\includegraphics[scale = .4]{resources/test_losspng.png}}
 \caption{Three dimensional box plot of the mean hamming distance between the adjusted probabilities on an }
 \end{figure}
 
+\subsection{Introducing Adversarial Training}
 
-\section{Emulating Germinal Center Capabilities with DEAP}
+By training an adversarial classifier model and selecting the most impactful pixels, the robustness of the model can be tested by utilizing these adversarially trained neural cellular automata with the rest of the originally trained classification model. 
+
+This is done in the following manner:
+\begin{enumerate}
+    \item Train a classification model normally as described in earlier sections
+    \item Train an adversarial model with a distorted version of the dataset
+    \item Swap out \%1 of pixels of the training model with the adversarial model
+    \item Test the results.
+\end{enumerate}
 
 
+The training results of this model is demonstrated below and demonstrate the impactfullness of the success that the adversarial models have.
+
+\begin{figure}[htbp]
+\centering{\includegraphics[scale = .4]{resources/test_losspng.png}}
+\caption{Three dimensional box plot of the mean hamming distance between the adjusted probabilities on an }
+\end{figure}
+
+This is in the case of a naively
+
+\section{Kuzushiji-MNIST Results}
+
+\subsection{Kuzushiji-MNIST Classification Results}
+
+The self classification model used on Fashion MNIST was also used to self-classify Japanese Hiragana character groups. Average accuracy among every pixel CA is used here to measure overall accuracy. 
+
+\begin{figure}[htbp]
+\centering{\includegraphics[scale = .4]{}}
+\caption{Three dimensional box plot of the mean hamming distance between the adjusted probabilities on an }
+\end{figure}
+
+As seen in Figure 
 
 \section{Discussion}
 
-This model still achieves decent results but has an element of visualization native to the model itself. While it may not be close to the state of the art results, it may be more ideal for those who are interested in models with an explainability / visualization capability over what you would typically see in black-box neural networks. In addition, increasing the convolution size from 3x3 to 5x5 is completely possible to obtain better results, but unfortunately, higher computation costs will occur as well.
+This model still achieves decent results but has an element of visualization native to the model itself. While it may not be close to the state of the art results, it may be more ideal for those who are interested in models with an explainability / visualization capability over what you would typically see in black-box neural networks. 
 
-\subsubsection{Conclusions}
+In addition, increasing the convolution size from 3x3 to 5x5 is completely possible to obtain better results as it increases the number of trainable parameters and also increases the scope for which results can be inferred upon. Unfortunately, this does lead to higher computation costs.
+
+Currently, the generative model achieves the dynamic switching of cell states by turning on neighbors that go above a certain level of activity. This can be changed to become more dynamic such as moderating the total amount of new neighbors (by drastically reducing or increasing the limits), and by developing new dynamic rules for the switching. Currently, the model grows on pace with the addition of new cells and regeneration of the original image, however, increasing the instability may allow for the model to regenerate with some added variances.
+
+\section{Conclusion}
 
 
 \begin{thebibliography}{00}
+
+\bibitem{selforg} Mordvintsev, Alexander, et al. “Growing Neural Cellular Automata.” Distill, 27 Aug. 2020, https://distill.pub/2020/growing-ca/. 
 
 \bibitem{self-classify} Randazzo, et al., "Self-classifying MNIST Digits", Distill, 2020.
 
@@ -215,6 +285,11 @@ This model still achieves decent results but has an element of visualization nat
 \bibitem{tf_fmnist} TensorFlow, TensorFlow Docs, (2020), GitHub repository, https://github.com/tensorflow/docs
 
 \bibitem{fmnist} H. Xiao, K. Rasul, και R. Vollgraf, ‘Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms’, CoRR, τ. abs/1708.07747, 2017.
+
+\bibitem{kmnist} Clanuwat, Tarin, et al. “Deep Learning for Classical Japanese Literature.” ArXiv.org, 3 Dec. 2018, https://arxiv.org/abs/1812.01718. 
+
+\bibitem{kmnistsota}  Hysts. “Pytorch Implementation of Image Classification Models for CIFAR-10/CIFAR-100/Mnist/Fashionmnist/Kmnist” GitHub, github.com/hysts/pytorch\_image\_classification
+
 \end{thebibliography}
 
 \section*{Contribution Statements}
