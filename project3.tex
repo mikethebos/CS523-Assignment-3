@@ -270,15 +270,33 @@ As seen in Figure \ref{kmnistavg}, the model achieves 61.97\% accuracy. However,
 \label{kmnistagree}
 \end{figure}
 
+\begin{figure}
+    \centering
+    \begin{minipage}{0.24\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{kmnist/agreement.png} % first figure itself
+        \caption{Total agreement amongst pixels with respect to the classification that is being outputted for the Kuzushiji-MNIST dataset.}
+        \label{kmnistagree}
+    \end{minipage}\hfill
+    \begin{minipage}{0.24\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{resources/islandexamplekmnist.png} % second figure itself
+        \caption{An example hiragana character that has three islands of pixels.}
+        \label{kmnistislands}
+    \end{minipage}
+\end{figure}
+
 Agreement is especially important with regards to Japanese Hiragana characters. Since a segmentation mask is used to prevent communication between islands of active cells, isolated calligraphic strokes present within some characters cannot communicate to converge on a consensus. Isolated strokes are common within Japanese calligraphy, so the final agreement of 28.26\% seen in Figure \ref{kmnistagree} is not surprising. 
 
-Tu further verify the proficiency of self-classification on the KMNIST dataset, confusion matrices were used. Each row in a confusion matrix corresponds to the samples in an actual class while each column corresponds to the samples in a predicted class. Figure 
+Tu further verify the proficiency of self-classification on the KMNIST dataset, confusion matrices were used. Figure \ref{kmnistconfusion} shows the confusion matrix for a 100,000 step training run.
 
 \begin{figure}[htbp]
-\centering{\includegraphics[scale = .4]{kmnist/train_log/confusion_matrices/total.png}}
-\caption{ Total agreement amongst pixels with respect to the classification that is being outputted for the Kuzushiji-MNIST dataset.}
-\label{kmnistagree}
+\centering{\includegraphics[scale = .4]{resources/kmnisttotalconfusion.png}}
+\caption{ Final training confusion matrix for each sample in the KMNIST test data set. Each row in a confusion matrix corresponds to the samples in an actual class while each column corresponds to the samples in a predicted class.}
+\label{kmnistconfusion}
 \end{figure}
+
+It can be seen that the model does fairly well at prediction once trained. Rows 2 and 5 (\begin{CJK}{UTF8}{min}き, な\end{CJK}, respectively) feature the most confusion as they have relatively high numbers of incorrect classifications in up to 4 other Hiragana character classes.  The characters corresponding to rows 2 and 5 have a diverse number of strokes taken in all directions (vertical:  up/down, horizontal:  left/right), which could be a possible cause for the confusion exhibited, especially since some of the incorrect classifications are of images that have islands of cells like those seen in Figure \ref{kmnistislands}.
 
 \section{Discussion}
 
