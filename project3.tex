@@ -82,7 +82,7 @@ The Fashion MNIST dataset is considered a clothing and accessory dataset consist
 \caption{ Visualization of a subset of images from the Fashion MNIST dataset that is trained upon, in order from top to bottom: T-shirt/top, Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, Bag, Ankle boot } 
 \end{figure}
 
-The current state of the art results for the models is \%96.91 achieved by the DARTS model \cite{Darts}, and where even the most simple of dense neural networks can achieve up to \%91 \cite{tf_fmnist}. Typically, model confusion arises in the classification of items such as t-shirts, pullovers, coats, and shirts where even human-level analysis can fail.
+The current state of the art results for the models is 96.91\% achieved by the DARTS model \cite{Darts}, and where even the most simple of dense neural networks can achieve up to 91\% \cite{tf_fmnist}. Typically, model confusion arises in the classification of items such as t-shirts, pullovers, coats, and shirts where even human-level analysis can fail.
 
 \subsection{Overview of Kuzushiji MNIST}
 
@@ -136,7 +136,7 @@ Since the goal of the model is to regenerate an image that the neural cellular a
 
 \subsection{Classification Model}
 
-The classification model is of similar form to the generative model with a perception and decision model. However, the decision model's goal becomes to output the correct classification of the pixel of the image and thus requires an activation function capable of producing a probability distribution function indicating the likelihook of each respective class. The perception model with the classification uses a trainable 2D convolutional neural network instead of the sobel operator in an attempt to better learn the features of the object.
+The classification model is of similar form to the generative model with a perception and decision model. However, the decision model's goal becomes to output the correct classification of the pixel of the image and thus requires an activation function capable of producing a probability distribution function indicating the likelihood of each respective class. The perception model with the classification uses a trainable 2D convolutional neural network instead of the sobel operator in an attempt to better learn the features of the object.
 
 \begin{itemize}
     \item Input Layer: 28x28 grayscale image.
@@ -145,6 +145,8 @@ The classification model is of similar form to the generative model with a perce
     \item Decision Model - Layer 2: 128 nodes, fully connected with ReLU activation function
     \item Decision Model - Layer 3: 10 nodes with classification-able activation function 
 \end{itemize}
+
+The authors in \cite{self-classify} change the target image and class every 200 steps. This is done to ensure that each cell in the NCA is able to continuously classify rather than get stuck in a dormant state where the output classification never changes. In each of our training plots throughout the Results sections, this is visible as a discontinuity at step 200.
 
 \subsection{Adversarial Model} 
 
@@ -160,7 +162,7 @@ After training the classification model on the Fashion MNIST dataset, that has b
     \frac{Total\_Correct\_CAs} {Total\_CAs}
 \end{equation}
 
-The maximum final accuracy determined from the test dataset is calculated to be \%80.81.
+The maximum final accuracy determined from the test dataset is calculated to be 80.81\%.
 
 \begin{figure}[htbp]
 \centering{\includegraphics[scale = .4]{resources/test_accuracy.png}}
@@ -169,11 +171,11 @@ The maximum final accuracy determined from the test dataset is calculated to be 
 
 
 
-Unfortunately, this metric is not the most informative metric as it doesnt account for agreement between cells. The agreement becomes a problem when 
+Unfortunately, this metric is not the most informative metric as it doesn't account for agreement between cells. A secondary metric can be applied here as the agreement between cells. This can be computed as the ratio of samples where all the cells output the same label to the total number of samples.
 
 \begin{figure}[htbp]
 \centering{\includegraphics[scale = .4]{resources/test_agreement.png}}
-\caption{ Total agreement amongst pixels with respect to the classification that is being outputted}
+\caption{ Total agreement amongst pixels with respect to the classification that is being outputted for the Fashion MNIST dataset.}
 \end{figure}
 
 By introducing this secondary metric, this attempts to help account for convergence of classifications amongst local regions with respect to each image. This metric becomes especially important with data that is not spatially connected. Due to the noise introduced in the pre-processing for the fashion MNIST dataset, there are occasionally "islands" of pixels that arrive to different classifications sometimes irrelevant to object of interest's classification.
@@ -234,7 +236,7 @@ This is done in the following manner:
 \begin{enumerate}
     \item Train a classification model normally as described in earlier sections
     \item Train an adversarial model with a distorted version of the dataset
-    \item Swap out \%1 of pixels of the training model with the adversarial model
+    \item Swap out 1\% of pixels of the training model with the adversarial model
     \item Test the results.
 \end{enumerate}
 
@@ -255,11 +257,28 @@ This is in the case of a naively
 The self classification model used on Fashion MNIST was also used to self-classify Japanese Hiragana character groups. Average accuracy among every pixel CA is used here to measure overall accuracy. 
 
 \begin{figure}[htbp]
-\centering{\includegraphics[scale = .4]{}}
-\caption{Three dimensional box plot of the mean hamming distance between the adjusted probabilities on an }
+\centering{\includegraphics[scale = .4]{kmnist/avgacc.png}}
+\caption{Average accuracy among CA cells for Kuzushiji-MNIST dataset.}
+\label{kmnistavg}
 \end{figure}
 
-As seen in Figure 
+As seen in Figure \ref{kmnistavg}, the model achieves 61.97\% accuracy. However, as explained before for Fashion MNIST, agreement is a more important metric.
+
+\begin{figure}[htbp]
+\centering{\includegraphics[scale = .4]{kmnist/agreement.png}}
+\caption{ Total agreement amongst pixels with respect to the classification that is being outputted for the Kuzushiji-MNIST dataset.}
+\label{kmnistagree}
+\end{figure}
+
+Agreement is especially important with regards to Japanese Hiragana characters. Since a segmentation mask is used to prevent communication between islands of active cells, isolated calligraphic strokes present within some characters cannot communicate to converge on a consensus. Isolated strokes are common within Japanese calligraphy, so the final agreement of 28.26\% seen in Figure \ref{kmnistagree} is not surprising. 
+
+Tu further verify the proficiency of self-classification on the KMNIST dataset, confusion matrices were used. Each row in a confusion matrix corresponds to the samples in an actual class while each column corresponds to the samples in a predicted class. Figure 
+
+\begin{figure}[htbp]
+\centering{\includegraphics[scale = .4]{kmnist/train_log/confusion_matrices/total.png}}
+\caption{ Total agreement amongst pixels with respect to the classification that is being outputted for the Kuzushiji-MNIST dataset.}
+\label{kmnistagree}
+\end{figure}
 
 \section{Discussion}
 
