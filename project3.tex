@@ -165,16 +165,15 @@ After training the classification model on the Fashion MNIST dataset, that has b
 The maximum final accuracy determined from the test dataset is calculated to be 80.81\%.
 
 \begin{figure}[htbp]
-\centering{\includegraphics[scale = .4]{resources/test_accuracy.png}}
-\caption{Three dimensional box plot of the mean hamming distance between the adjusted probabilities on an }
+\centering{\includegraphics[scale = .4]{resources/class_cell.png}}
+\caption{Average cell accuracy for classification amongst pixels}
 \end{figure}
-
 
 
 Unfortunately, this metric is not the most informative metric as it doesn't account for agreement between cells. A secondary metric can be applied here as the agreement between cells. This can be computed as the ratio of samples where all the cells output the same label to the total number of samples.
 
 \begin{figure}[htbp]
-\centering{\includegraphics[scale = .4]{resources/test_agreement.png}}
+\centering{\includegraphics[scale = .4]{resources/class_agreement.png}}
 \caption{ Total agreement amongst pixels with respect to the classification that is being outputted for the Fashion MNIST dataset.}
 \end{figure}
 
@@ -220,12 +219,11 @@ Because the alive cells in the generative results are dynamic. The selection of 
 % \label{tab:mytable}
 \end{table}
 
-From the information and the generated progress visualizations, the model seems to be able to recreate the original image in many different manners, but in the end after 8000 epochs, the neural cellular automata seem to be successful in the recreation. 
-
+From the information and the generated progress visualizations, the model seems to be able to recreate the original image in many different manners, but in the end after 8000 epochs, the neural cellular automata seem to be successful in the recreation.
 
 \begin{figure}[htbp]
-\centering{\includegraphics[scale = .4]{resources/test_losspng.png}}
-\caption{Three dimensional box plot of the mean hamming distance between the adjusted probabilities on an }
+\centering{\includegraphics[scale = .4]{resources/gen_loss.png}}
+\caption{Training loss of generation over time}
 \end{figure}
 
 \subsection{Introducing Adversarial Training}
@@ -241,14 +239,12 @@ This is done in the following manner:
 \end{enumerate}
 
 
-The training results of this model is demonstrated below and demonstrate the impactfullness of the success that the adversarial models have.
-
 \begin{figure}[htbp]
-\centering{\includegraphics[scale = .4]{resources/test_losspng.png}}
-\caption{Three dimensional box plot of the mean hamming distance between the adjusted probabilities on an }
+\centering{\includegraphics[scale = .4]{resources/adv_loss.png}}
+\caption{Training loss of adversarially learning over time}
 \end{figure}
 
-This is in the case of a naively
+The training results of this model is demonstrated above and demonstrate the impactfullness of the success that the adversarial models have in a naive sense where there is only a single adversarial response. It may be possible to train the original model with the adversarial nodes in mind such that it can learn to sometimes ignore nodes. This process can repeat itself many times to potentially generate more robust models.
 
 \section{Kuzushiji-MNIST Results}
 
@@ -270,23 +266,13 @@ As seen in Figure \ref{kmnistavg}, the model achieves 61.97\% accuracy. However,
 \label{kmnistagree}
 \end{figure}
 
-\begin{figure}
-    \centering
-    \begin{minipage}{0.24\textwidth}
-        \centering
-        \includegraphics[width=0.9\textwidth]{kmnist/agreement.png} % first figure itself
-        \caption{Total agreement amongst pixels with respect to the classification that is being outputted for the Kuzushiji-MNIST dataset.}
-        \label{kmnistagree}
-    \end{minipage}\hfill
-    \begin{minipage}{0.24\textwidth}
-        \centering
-        \includegraphics[width=0.9\textwidth]{resources/islandexamplekmnist.png} % second figure itself
-        \caption{An example hiragana character that has three islands of pixels.}
-        \label{kmnistislands}
-    \end{minipage}
+\begin{figure}[htbp]
+\centering{\includegraphics[scale = .3]{resources/islandexamplekmnist.png}}
+\caption{ An example hiragana character that has three islands of pixels.}
+\label{kmnistislands}
 \end{figure}
 
-Agreement is especially important with regards to Japanese Hiragana characters. Since a segmentation mask is used to prevent communication between islands of active cells, isolated calligraphic strokes present within some characters cannot communicate to converge on a consensus. Isolated strokes are common within Japanese calligraphy, so the final agreement of 28.26\% seen in Figure \ref{kmnistagree} is not surprising. 
+Agreement is especially important with regards to Japanese Hiragana characters. Since a segmentation mask is used to prevent communication between islands of active cells, isolated calligraphic strokes present within some characters cannot communicate to converge on a consensus. Isolated strokes are common within Japanese calligraphy, so the final agreement of 28.26\% seen in Figure \ref{kmnistagree} is not surprising. An example of a character with three islands can be seen in Figure \ref{kmnistislands}.
 
 Tu further verify the proficiency of self-classification on the KMNIST dataset, confusion matrices were used. Figure \ref{kmnistconfusion} shows the confusion matrix for a 100,000 step training run.
 
@@ -298,6 +284,18 @@ Tu further verify the proficiency of self-classification on the KMNIST dataset, 
 
 It can be seen that the model does fairly well at prediction once trained. Rows 2 and 5 (\begin{CJK}{UTF8}{min}き, な\end{CJK}, respectively) feature the most confusion as they have relatively high numbers of incorrect classifications in up to 4 other Hiragana character classes.  The characters corresponding to rows 2 and 5 have a diverse number of strokes taken in all directions (vertical:  up/down, horizontal:  left/right), which could be a possible cause for the confusion exhibited, especially since some of the incorrect classifications are of images that have islands of cells like those seen in Figure \ref{kmnistislands}.
 
+\subsection{Adversarial Experiments}
+
+Similarly to the experiments performed on the Fashion MNIST dataset, the adversarial model was trained on KMNIST, as well. Loss dropped rapidly within the first 2,000 training steps as seen before and were able to convince the original NCA to change its prediction to the \begin{CJK}{UTF8}{min}れ\end{CJK} Japanese character class. Figure \ref{kmnistadvex} shows an example adversarial classification.
+
+\begin{figure}[htbp]
+\centering{\includegraphics[scale = .28]{resources/combkmnistadv.png}}
+\caption{ Adversaries depicted by red dots. Left:  Initial image iterated to a steady state by original NCA.  Middle:  Full effect of single adversary added to right stroke of character.  Right:  Subsequent effect of an additional adversary added to left stroke of character.}
+\label{kmnistadvex}
+\end{figure}
+
+It can be seen that only two adversaries are needed in order to convince the pretrained NCA to change its class. This behavior can be seen for many other examples in the KMNIST test dataset. We predict that this is due to strategic placement of the adversaries. Observations of the animated classification process \footnote{Videos of animations for several characters can be found in the code zip file accompanying this paper. } showed that adversaries needed to be placed near stroke intersections in order to minimize the number of adversaries necessary.  We suppose that this allows each adversary to communicate further along the shape, and thus, reinforcing other active adversaries.
+
 \section{Discussion}
 
 This model still achieves decent results but has an element of visualization native to the model itself. While it may not be close to the state of the art results, it may be more ideal for those who are interested in models with an explainability / visualization capability over what you would typically see in black-box neural networks. 
@@ -306,8 +304,16 @@ In addition, increasing the convolution size from 3x3 to 5x5 is completely possi
 
 Currently, the generative model achieves the dynamic switching of cell states by turning on neighbors that go above a certain level of activity. This can be changed to become more dynamic such as moderating the total amount of new neighbors (by drastically reducing or increasing the limits), and by developing new dynamic rules for the switching. Currently, the model grows on pace with the addition of new cells and regeneration of the original image, however, increasing the instability may allow for the model to regenerate with some added variances.
 
-\section{Conclusion}
+Further changes to the NCA model may also improve KMNIST average accuracy and agreement among cells. Since islands of cells are commonly found within Hiragana characters, solely increasing the parameter space may not help. Instead, we propose future work look into an alternative to the alive/dead cell segmentation mask, or removing it altogether, to allow communication between islands.
 
+The KMNIST adversarial model brings further explainability to classification not found in neural networks. The ability to manually place adversaries and watch the NCA progress towards a prediction is valuable in a production setting and provides a peek into the black box mathematics of the convolutional layers. Adding adversaries on top of this and retraining the original NCA to counter them may yield confidence in a production deployment of NCAs if robustness develops.
+
+\section{Conclusion}
+An expanded analysis pf the ideas presented in \cite{selforg}, \cite{self-classify}, and \cite{adversarial} were performed. Two new datasets were used as input into these existing models in order to evaluate how well NCAs can adapt to more complex data. While our classification results were subpar (80.81\% and 61.97\% for Fashion MNIST and Kuzushiji MNIST, respectively) when compared to state-of-the-art results using regular neural networks, they performed reasonably and have potential for architectural changes to increase performance.
+
+However, NCAs offer increased explainability compared with regular neural networks that are considered to be black-box models without ability to be interpreted. NCAs performing classification or growth can be visually animated through all iterations, allowing computer scientists and domain experts to gain insight into what the model is doing, even though a NCA is still a black box model under the hood.
+
+Future work should look at more complex image datasets, such as CIFAR-10 or Quick Draw, to see if NCAs can apply. Investigation into architectural and segmentation mask adjustments should accompany incorporation of new datasets to NCAs.
 
 \begin{thebibliography}{00}
 
@@ -326,6 +332,8 @@ Currently, the generative model achieves the dynamic switching of cell states by
 \bibitem{kmnist} Clanuwat, Tarin, et al. “Deep Learning for Classical Japanese Literature.” ArXiv.org, 3 Dec. 2018, https://arxiv.org/abs/1812.01718. 
 
 \bibitem{kmnistsota}  Hysts. “Pytorch Implementation of Image Classification Models for CIFAR-10/CIFAR-100/Mnist/Fashionmnist/Kmnist” GitHub, github.com/hysts/pytorch\_image\_classification
+
+\bibitem{mnistpng} DeepLenin. “DeepLenin/Fashion-mnist\_png: Fashion-Mnist Converted to PNG (with Script).” GitHub, https://github.com/DeepLenin/fashion-mnist_png. 
 
 \end{thebibliography}
 
@@ -354,6 +362,14 @@ Currently, the generative model achieves the dynamic switching of cell states by
 \end{itemize}
 
 \subsection{Michael} 
+
+\begin{itemize}
+    \item Wrote ML related sections of proposal
+    \item Worked on running self classification for KMNIST
+    \item Worked on running adversarial models for KMNIST
+    \item Generated videos and text for KMNIST portion of presentation on May 3rd
+    \item Wrote KMNIST results, bits of discussion, and complete conclusion
+\end{itemize}
 
 
 \end{document}
